@@ -1,0 +1,12 @@
+<div class="d-flex justify-content-center align-items-center w-100 my-5 ">
+  <div class="text-center w-50">
+    <p>I've lost my script, please issue a new one at a charge of €10</p>
+    <%= form_for @payment do |f| %>
+      <%= f.hidden_field(:user_id, :value => params['id']) %>
+
+      <div class="form-group mb-0">
+        <%= f.submit 'Submit', class: 'btn btn-primary' %>
+      </div>
+    <% end %>
+  </div>
+</div>
