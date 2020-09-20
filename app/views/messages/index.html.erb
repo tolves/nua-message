@@ -1,3 +1,3 @@
-<%= render partial: 'inbox', locals: {messages: @patient_messages, user: @patient, unread: @patient_unread_count}%>
-<%= render partial: 'inbox', locals: {messages: @doctor_messages, user: @doctor, unread: @doctor_unread_count}%>
-<%= render partial: 'inbox', locals: {messages: @admin_messages, user: @admin, unread: @admin_unread_count}%>
+<% @out.each do |user| %>
+  <%= render partial: 'inbox', locals: {user: user[0]} %>
+<% end %>

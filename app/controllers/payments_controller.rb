@@ -8,8 +8,8 @@ class PaymentsController < ApplicationController
 
   def create
     @patient = User.current
-    @doctor = User.find_by_id(2)
-    @admin = User.find_by_id(3)
+    @doctor = User.default_doctor
+    @admin = User.default_admin
 
     # send a message to the doctor if payment successful
     # # when an error catched:
@@ -17,19 +17,21 @@ class PaymentsController < ApplicationController
     # 2. send an error message to admin
     # 3. alert patient payment unsuccessful
     # 4. log the error message
+
+    message = @patient.full_name + " requested a new script."
+
     begin
-      @payment_result = PaymentProviderFactory.provider.debit_card(@patient)
-      message = @patient.first_name + ' ' + @patient.last_name + " request a new script."
-      Message.create(body: message, outbox: @patient.outbox, inbox: @doctor.inbox)
+      Payment.request_payment
+      Message.send_message(message, @patient, @doctor)
+      flash[:info] = 'Payment Successful'
     rescue StandardError => e
-      message = @patient.first_name + ' ' + @patient.last_name + " request a new script. But failed when payment, check the logs please."
-      Message.create(body: message, outbox: @patient.outbox, inbox: @admin.inbox)
-      flash[:warning] = 'Payment Failed. Please contact the administrator'
+      message += ' But failed when payment, check the logs please.'
+      Message.send_message(message, @patient, @admin)
+      flash[:danger] = 'Payment Failed. Please contact the administrator'
       logger.debug e.message
     ensure
-      @payment = Payment.new(payment_params)
-      @payment.save
-      flash[:info] = 'Payment record has created'
+      Payment.save_payment_record(payment_params)
+      flash[:warning] = 'Payment record has created'
     end
 
     redirect_to messages_url
@@ -40,5 +42,4 @@ class PaymentsController < ApplicationController
   def payment_params
     params.require(:payment).permit(:user_id)
   end
-
 end
