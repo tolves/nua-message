@@ -12,9 +12,8 @@ class MessagesController < ApplicationController
     doctor_unread_count = Message.unread_count(doctor)
     admin_unread_count = Message.unread_count(admin)
 
-    @out = [[messages: patient_messages, fullname: patient.full_name, unread: patient_unread_count],
-            [messages: doctor_messages, fullname: doctor.full_name, unread: doctor_unread_count],
-            [messages: admin_messages, fullname: admin.full_name, unread: admin_unread_count]]
+    @out = {:messages => patient_messages, :fullname => patient.full_name, :unread => patient_unread_count}, {:messages => doctor_messages, :fullname => doctor.full_name, :unread => doctor_unread_count}, {:messages => admin_messages, :fullname => admin.full_name, :unread => admin_unread_count}
+    puts @out.inspect
 
     respond_to do |format|
       format.json { render json: @out }
@@ -26,7 +25,7 @@ class MessagesController < ApplicationController
     last_message = Message.last_message (params[:id])
     Message.messages_read(last_message)
     messages = Message.get_user_messages(last_message).page params[:page]
-    @out = [messages: messages, last_message: last_message]
+    @out = {:messages => messages, :last_message => last_message}
 
     respond_to do |format|
       format.json { render json: @out }

@@ -1,3 +1,3 @@
-<% @out.each do |user| %>
-  <%= render partial: 'inbox', locals: {user: user[0]} %>
+<% @out.each do |data| %>
+  <%= render partial: 'inbox', locals: {data: data} %>
 <% end %>
