@@ -8,8 +8,8 @@
       <div class="form-group py-3">
         <%= f.text_area :body, class: "form-control", rows: 3 %>
       </div>
-      <%= f.hidden_field(:inbox_id, :value => params['inbox'])%>
-      <%= f.hidden_field(:outbox_id, :value => params['outbox'])%>
+      <%= f.hidden_field(:inbox, :value => params['inbox'])%>
+      <%= f.hidden_field(:outbox, :value => params['outbox'])%>
 
       <div class="form-group mb-0 text-right">
         <%= f.submit 'Send Message', class: 'btn btn-primary' %>

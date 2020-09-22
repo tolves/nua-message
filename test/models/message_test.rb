@@ -3,8 +3,8 @@ require 'test_helper'
 class MessageTest < ActionDispatch::IntegrationTest
   setup do
     @patient = User.current
-    @doctor = User.find_by_id(2)
-    @admin = User.find_by_id(3)
+    @doctor = User.default_admin
+    @admin = User.default_doctor
     @message = Message.create(body: 'this is an message from patient to doctor', outbox_id: @patient.outbox.id, inbox_id: @doctor.inbox.id)
   end
 
@@ -18,15 +18,15 @@ class MessageTest < ActionDispatch::IntegrationTest
   end
 
   test "should unread number increased" do
-    count = Message.unread_count(@doctor)
-    assert_equal(1, count[@patient.id])
+    count = @doctor.unread
+    assert_equal(3, count[@patient.id])
   end
 
   test "should unread number decreased after read" do
-    before_visit = Message.unread_count(@doctor)
+    before_visit = @doctor.unread
     get message_url(@message.id)
     assert_response :success
-    after_visit = Message.unread_count(@doctor)
+    after_visit = @doctor.unread
     assert_not_equal(before_visit, after_visit)
   end
 

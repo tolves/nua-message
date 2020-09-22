@@ -24,4 +24,14 @@ class User < ApplicationRecord
   def full_name
     "#{first_name} #{last_name}"
   end
+
+  def get_messages
+    inbox.messages.order(created_at: :desc).group(:outbox_id).from(Message.order(created_at: :desc), :messages)
+  end
+
+  def unread
+    count = inbox.messages.unread.group(:outbox_id).count
+    count[:sum] = inbox.messages.unread.count
+    count
+  end
 end

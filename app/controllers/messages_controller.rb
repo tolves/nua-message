@@ -4,16 +4,9 @@ class MessagesController < ApplicationController
     doctor = User.default_admin
     admin = User.default_doctor
 
-    patient_messages = Message.get_messages(patient).page params[:page]
-    doctor_messages = Message.get_messages(doctor).page params[:page]
-    admin_messages = Message.get_messages(admin).page params[:page]
-
-    patient_unread_count = Message.unread_count(patient)
-    doctor_unread_count = Message.unread_count(doctor)
-    admin_unread_count = Message.unread_count(admin)
-
-    @out = {:messages => patient_messages, :fullname => patient.full_name, :unread => patient_unread_count}, {:messages => doctor_messages, :fullname => doctor.full_name, :unread => doctor_unread_count}, {:messages => admin_messages, :fullname => admin.full_name, :unread => admin_unread_count}
-    puts @out.inspect
+    @out = {:messages => patient.get_messages.page(params[:page]), :fullname => patient.full_name, :unread => patient.unread},
+        {:messages => doctor.get_messages.page(params[:page]), :fullname => doctor.full_name, :unread => doctor.unread},
+        {:messages => admin.get_messages.page(params[:page]), :fullname => admin.full_name, :unread => admin.unread}
 
     respond_to do |format|
       format.json { render json: @out }
@@ -23,8 +16,9 @@ class MessagesController < ApplicationController
 
   def show
     last_message = Message.last_message (params[:id])
-    Message.messages_read(last_message)
+    MarkAsReadService.new(last_message).call
     messages = Message.get_user_messages(last_message).page params[:page]
+
     @out = {:messages => messages, :last_message => last_message}
 
     respond_to do |format|
@@ -38,26 +32,22 @@ class MessagesController < ApplicationController
   end
 
   def create
-    begin
-      @message = Message.new(message_params)
-      @message.save
-      flash[:success] = 'Message sent successful.'
-    rescue StandardError => e
-      flash[:warning] = 'Message sent failed.'
-      logger.debug e.message
+    message = SendMessageService.new(message_params[:body], from: message_params[:outbox], to: message_params[:inbox]).call
+    if message && message.success?
+      flash[:success] = 'The message was successfully sent to the recipient'
+      redirect_to action: :index
+    else
+      flash[:warning] = message.error
+      render :new
     end
-    redirect_to action: :index
   end
 
   def destroy
-    #@message = Message.find(params[:id])
-    #@message.destroy
-    #flash[:success] = 'Message deleted.'
-    #redirect_to action: :index
   end
 
   private
+
   def message_params
-    params.require(:message).permit(:body, :inbox_id, :outbox_id)
+    params.require(:message).permit(:body, :inbox, :outbox)
   end
 end

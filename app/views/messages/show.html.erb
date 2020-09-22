@@ -1,6 +1,6 @@
 <div class="card my-3 ">
   <div>
-    <%= link_to "Reply", new_message_path(:inbox => @out[:last_message].outbox.id, :outbox => @out[:last_message].inbox.id), class: "btn btn-primary" %>
+    <%= link_to "Reply", new_message_path(:inbox => @out[:last_message].outbox, :outbox => @out[:last_message].inbox), class: "btn btn-primary" %>
     <% if @out[:last_message].inbox.user.is_patient? %>
       <%= link_to "I've lost my prescription", payment_url(@out[:last_message].inbox.user), class: "btn btn-primary" %>
     <% end %>
