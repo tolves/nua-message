@@ -14,6 +14,4 @@ class SendMessageService
   end
 
   private
-
-  #attr_reader :body, :from, :to
 end
